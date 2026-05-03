@@ -4,6 +4,7 @@ import time
 import random
 import re
 
+
 COOKIE = ""
 
 def extract_bvid(input_str):
