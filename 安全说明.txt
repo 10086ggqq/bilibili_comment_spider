@@ -1,0 +1,241 @@
+# B站评论爬取工具 - 安全增强版
+
+## 🛡️ 已实施的安全措施
+
+### 1. **随机延迟机制**
+- ✅ 每次请求之间随机等待 2-8 秒
+- ✅ 避免固定时间间隔被识别为机器人
+- ✅ 模拟真实用户浏览行为
+
+### 2. **User-Agent 轮换**
+- ✅ 内置5种不同的User-Agent
+- ✅ 每10次请求自动切换User-Agent
+- ✅ 模拟不同浏览器和设备
+
+### 3. **请求频率限制**
+- ✅ 最小请求间隔：2秒
+- ✅ 最大请求间隔：8秒
+- ✅ 自动检测请求速度，过快自动等待
+
+### 4. **智能重试机制**
+- ✅ 失败自动重试（最多3次）
+- ✅ 重试前随机等待3-6秒
+- ✅ 连续失败3次自动停止
+
+### 5. **错误码处理**
+- ✅ 检测到错误码-412（请求被拦截）
+- ✅ 自动等待10-20秒后重试
+- ✅ 避免立即重试导致更严重的封禁
+
+### 6. **完整的请求头**
+- ✅ 模拟真实浏览器的完整请求头
+- ✅ 包含Accept、Accept-Language等字段
+- ✅ 包含Sec-Fetch-*系列安全头
+
+## 📋 使用建议
+
+### ✅ 推荐做法
+```
+• 每次爬取不超过 50 页（约1000条评论）
+• 每天爬取不超过 5 个视频
+• 两次爬取间隔至少 30 分钟
+• 使用小号进行测试
+• 避开高峰时段（晚上8-10点）
+```
+
+### ❌ 避免做法
+```
+• 短时间内爬取大量视频
+• 连续爬取多个视频不休息
+• 使用主账号进行爬取
+• 设置过短的延迟时间
+• 在高峰时段大量请求
+```
+
+## 🎯 风险等级评估
+
+### 🟢 低风险（推荐）
+- 每次爬取 ≤ 10 页
+- 每天爬取 ≤ 3 个视频
+- 间隔时间 ≥ 30 分钟
+- 使用小号
+
+### 🟡 中等风险
+- 每次爬取 10-30 页
+- 每天爬取 3-5 个视频
+- 间隔时间 10-30 分钟
+- 使用小号
+
+### 🔴 高风险（不推荐）
+- 每次爬取 > 50 页
+- 每天爬取 > 5 个视频
+- 间隔时间 < 10 分钟
+- 使用主账号
+
+## 🚨 被封号的征兆
+
+如果出现以下情况，说明可能被限流或封禁：
+
+1. **错误码 -412**：请求被拦截
+2. **频繁超时**：请求经常超时
+3. **返回空数据**：视频有评论但返回空
+4. **登录失效**：Cookie突然失效
+
+## 💡 应对措施
+
+### 如果被封禁：
+
+1. **立即停止爬取**
+2. **等待24-48小时**
+3. **更换IP地址**（重启路由器或使用VPN）
+4. **更换账号**
+5. **重新获取Cookie**
+
+### 预防措施：
+
+1. **使用小号测试**
+2. **控制爬取频率**
+3. **分散爬取时间**
+4. **监控错误信息**
+
+## 📊 性能与安全平衡
+
+### 安全模式（默认）
+```
+请求间隔: 2.5-8.0 秒
+User-Agent轮换: 每10次请求
+重试次数: 3次
+推荐用于: 长期稳定使用
+```
+
+### 快速模式（不推荐）
+```
+请求间隔: 1-2 秒
+User-Agent轮换: 关闭
+重试次数: 1次
+风险等级: 高
+仅用于: 紧急情况，小量数据
+```
+
+## 🔧 代码示例
+
+### 安全使用示例
+```python
+from bilibili_crawler import crawl_comments
+
+# 爬取10页评论（安全）
+comments = crawl_comments(
+    bvid="BV1WE411K7bD",
+    max_pages=10,
+    safe_mode=True
+)
+
+# 等待30分钟后再爬取下一个
+import time
+time.sleep(1800)
+
+# 爬取下一个视频
+comments2 = crawl_comments(
+    bvid="BV1uv411q7Mv",
+    max_pages=10,
+    safe_mode=True
+)
+```
+
+### 批量爬取示例
+```python
+import time
+from bilibili_crawler import crawl_comments
+
+video_list = ["BV1WE411K7bD", "BV1uv411q7Mv", "BV1Jt411s7dZ"]
+
+for i, bvid in enumerate(video_list):
+    print(f"正在爬取第 {i+1}/{len(video_list)} 个视频")
+    
+    comments = crawl_comments(
+        bvid=bvid,
+        max_pages=5,
+        safe_mode=True
+    )
+    
+    # 每个视频之间等待30-60分钟
+    if i < len(video_list) - 1:
+        wait_time = random.uniform(1800, 3600)
+        print(f"等待 {wait_time/60:.1f} 分钟后继续...")
+        time.sleep(wait_time)
+```
+
+## 📈 监控指标
+
+建议记录以下指标：
+
+```python
+import time
+from datetime import datetime
+
+class CrawlMonitor:
+    def __init__(self):
+        self.start_time = time.time()
+        self.request_count = 0
+        self.error_count = 0
+        self.comments_count = 0
+    
+    def log_request(self, success=True):
+        self.request_count += 1
+        if not success:
+            self.error_count += 1
+        
+        elapsed = time.time() - self.start_time
+        rate = self.request_count / elapsed if elapsed > 0 else 0
+        
+        print(f"[监控] 请求: {self.request_count}, 错误: {self.error_count}, "
+              f"评论: {self.comments_count}, 频率: {rate:.2f} req/s")
+    
+    def check_health(self):
+        error_rate = self.error_count / self.request_count if self.request_count > 0 else 0
+        if error_rate > 0.3:
+            print("⚠️  错误率过高，建议停止爬取")
+            return False
+        return True
+```
+
+## ⚖️ 法律与道德
+
+### 合法使用
+- ✅ 仅用于个人学习和研究
+- ✅ 不用于商业用途
+- ✅ 不传播爬取的数据
+- ✅ 遵守B站用户协议
+
+### 违法使用
+- ❌ 大规模爬取用于商业
+- ❌ 出售爬取的数据
+- ❌ 恶意攻击B站服务器
+- ❌ 爬取用户隐私信息
+
+## 📞 技术支持
+
+如遇问题，请检查：
+1. Cookie是否过期
+2. 网络连接是否正常
+3. BV号是否正确
+4. 是否被限流或封禁
+
+## 🔄 更新日志
+
+### v2.0 (安全增强版)
+- ✅ 增加随机延迟机制
+- ✅ 增加User-Agent轮换
+- ✅ 增加请求频率限制
+- ✅ 增加智能重试机制
+- ✅ 增加错误码处理
+- ✅ 增加安全提示和监控
+
+### v1.0 (初始版本)
+- ✅ 基础评论爬取功能
+- ✅ Cookie支持
+- ✅ CSV导出
+
+---
+
+**免责声明**：本工具仅供学习研究使用，使用者需自行承担风险。作者不对任何因使用本工具导致的账号封禁、法律问题等负责。请合理、合法使用。

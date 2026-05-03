@@ -1,0 +1,191 @@
+# B站评论爬取工具 - 安全增强版总结
+
+## ✅ 已完成的安全优化
+
+### 1. **随机延迟机制**
+```python
+# 每次请求之间随机等待 2-8 秒
+spider.min_interval = random.uniform(2.5, 4.0)
+spider.max_interval = random.uniform(5.0, 8.0)
+```
+
+### 2. **User-Agent 轮换**
+```python
+# 内置5种不同的User-Agent，每10次请求自动切换
+USER_AGENTS = [
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) Chrome/120.0.0.0",
+    "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) Chrome/120.0.0.0",
+    # ... 更多
+]
+```
+
+### 3. **请求频率限制**
+```python
+# 自动检测请求速度，过快自动等待
+def _check_rate_limit(self):
+    current_time = time.time()
+    time_since_last = current_time - self.last_request_time
+    if time_since_last < self.min_interval:
+        wait_time = self.min_interval - time_since_last + random.uniform(0.5, 1.5)
+        time.sleep(wait_time)
+```
+
+### 4. **智能重试机制**
+```python
+# 失败自动重试（最多3次），重试前随机等待
+for attempt in range(max_retries):
+    try:
+        # 请求代码
+    except:
+        wait_time = (attempt + 1) * random.uniform(3, 6)
+        time.sleep(wait_time)
+```
+
+### 5. **错误码处理**
+```python
+# 检测到错误码-412（请求被拦截），自动等待10-20秒
+if data.get("code") == -412:
+    print("[!] 请求被拦截，等待更长时间后重试...")
+    time.sleep(random.uniform(10, 20))
+```
+
+### 6. **完整的请求头**
+```python
+# 模拟真实浏览器的完整请求头
+headers = {
+    "User-Agent": "...",
+    "Referer": "https://www.bilibili.com",
+    "Origin": "https://www.bilibili.com",
+    "Accept": "application/json, text/plain, */*",
+    "Accept-Language": "zh-CN,zh;q=0.9,en;q=0.8",
+    "Sec-Fetch-Dest": "empty",
+    "Sec-Fetch-Mode": "cors",
+    "Sec-Fetch-Site": "same-site",
+}
+```
+
+## 📊 测试结果
+
+### 测试视频：BV1WE411K7bD
+- ✅ 成功获取 2 条评论
+- ✅ 安全模式运行正常
+- ✅ 请求间隔: 3.8-5.5秒
+- ✅ CSV文件正确保存
+
+### 输出示例
+```
+============================================================
+[!] 安全提示
+============================================================
+为降低被封号风险，已采取以下措施：
+[+] 随机延迟时间 (2-8秒)
+[+] 随机User-Agent轮换
+[+] 请求频率限制
+[+] 自动重试机制
+[+] 错误码-412自动等待
+```
+
+## 🎯 风险降低效果
+
+### 原版本风险
+- ❌ 固定延迟时间 → 容易被识别为机器人
+- ❌ 单一User-Agent → 容易被追踪
+- ❌ 无请求频率限制 → 容易触发反爬
+- ❌ 无重试机制 → 失败立即停止
+- ❌ 无错误处理 → 被拦截后继续请求
+
+### 安全增强版
+- ✅ 随机延迟时间 → 模拟真实用户
+- ✅ User-Agent轮换 → 分散特征
+- ✅ 智能频率限制 → 避免触发反爬
+- ✅ 自动重试机制 → 提高成功率
+- ✅ 错误码处理 → 避免加重封禁
+
+## 📋 使用建议
+
+### 推荐配置
+```python
+# 安全模式（默认）
+max_pages = 10          # 每次不超过50页
+safe_mode = True        # 开启安全模式
+min_interval = 2.5      # 最小间隔2.5秒
+max_interval = 8.0      # 最大间隔8秒
+```
+
+### 批量爬取建议
+```python
+import time
+import random
+
+video_list = ["BV1", "BV2", "BV3"]
+
+for bvid in video_list:
+    crawl_comments(bvid, max_pages=10, safe_mode=True)
+    
+    # 每个视频之间等待30-60分钟
+    wait_time = random.uniform(1800, 3600)
+    time.sleep(wait_time)
+```
+
+## 🔍 监控指标
+
+程序会自动显示：
+- 请求次数
+- 成功/失败次数
+- 评论总数
+- 请求频率
+- 错误信息
+
+## ⚠️ 重要提醒
+
+1. **Cookie有效期**
+   - Cookie会过期，通常几小时到几天
+   - 如果无法获取评论，需要重新获取Cookie
+
+2. **使用限制**
+   - 每次不超过50页
+   - 每天不超过5个视频
+   - 间隔至少30分钟
+
+3. **账号安全**
+   - 建议使用小号测试
+   - 避免使用主账号
+   - 监控异常情况
+
+4. **合法使用**
+   - 仅用于学习研究
+   - 不用于商业用途
+   - 遵守B站用户协议
+
+## 📁 文件说明
+
+- `bilibili_comment_spider.py` - 核心爬虫类（安全增强版）
+- `bilibili_crawler.py` - 便捷使用脚本（已内置Cookie）
+- `安全说明.txt` - 详细安全说明文档
+- `comments_*.csv` - 爬取结果文件
+
+## 🚀 快速开始
+
+```bash
+# 命令行使用
+python bilibili_crawler.py BV号 页数
+
+# 示例
+python bilibili_crawler.py BV1WE411K7bD 10
+```
+
+```python
+# 代码中使用
+from bilibili_crawler import crawl_comments
+
+comments = crawl_comments(
+    bvid="BV1WE411K7bD",
+    max_pages=10,
+    safe_mode=True
+)
+```
+
+---
+
+**最后更新**: 2026-05-01
+**版本**: v2.0 安全增强版
