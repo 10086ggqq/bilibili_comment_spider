@@ -1,0 +1,124 @@
+# GitHub上传前检查清单 ✓
+
+在上传到GitHub之前，请确保完成以下检查：
+
+## 🔒 隐私安全检查
+
+- [ ] **config.py 已添加到 .gitignore**
+  - 确认 `.gitignore` 文件包含 `config.py`
+  - 确认 `config.py` 不会被提交
+
+- [ ] **Cookie已从代码中移除**
+  - 检查所有 `.py` 文件，确保没有硬编码的Cookie
+  - 确认Cookie只在 `config.py` 中配置
+
+- [ ] **个人信息已清理**
+  - 检查代码注释，移除个人信息
+  - 检查文档，移除敏感信息
+
+## 📁 文件清理
+
+- [ ] **删除生成的CSV文件**
+  - 运行 `cleanup.bat` (Windows) 或 `cleanup.sh` (Linux/Mac)
+  - 或手动删除所有 `*.csv` 文件
+
+- [ ] **删除测试文件**
+  - 删除 `test_*.py` 文件
+  - 删除 `demo_*.py` 文件
+
+- [ ] **清理Python缓存**
+  - 删除 `__pycache__` 目录
+  - 删除 `*.pyc` 文件
+
+## 📝 文档完善
+
+- [ ] **README.md 已创建**
+  - 包含项目说明
+  - 包含安装步骤
+  - 包含使用方法
+
+- [ ] **config.example.py 已创建**
+  - 提供配置模板
+  - 包含获取Cookie的说明
+
+- [ ] **.gitignore 已创建**
+  - 包含常见的忽略项
+  - 特别包含 `config.py`
+
+## ✅ 功能测试
+
+- [ ] **代码可以正常运行**
+  - 测试基本功能
+  - 确认没有错误
+
+- [ ] **配置文件正常工作**
+  - 测试从 `config.py` 读取Cookie
+  - 确认错误提示正确
+
+## 🚀 上传步骤
+
+1. **初始化Git仓库**（如果还没有）
+   ```bash
+   git init
+   ```
+
+2. **添加文件到暂存区**
+   ```bash
+   git add .
+   ```
+
+3. **检查将要提交的文件**
+   ```bash
+   git status
+   ```
+   确认 `config.py` 不在列表中！
+
+4. **提交更改**
+   ```bash
+   git commit -m "Initial commit: B站评论爬取工具"
+   ```
+
+5. **添加远程仓库**
+   ```bash
+   git remote add origin https://github.com/你的用户名/仓库名.git
+   ```
+
+6. **推送到GitHub**
+   ```bash
+   git push -u origin main
+   ```
+
+## ⚠️ 重要提醒
+
+### 绝对不要上传的文件：
+
+- ❌ `config.py` - 包含你的Cookie
+- ❌ `*.csv` - 爬取的数据
+- ❌ `__pycache__/` - Python缓存
+- ❌ `*.pyc` - 编译的Python文件
+
+### 必须上传的文件：
+
+- ✅ `bilibili_comment_spider.py` - 核心代码
+- ✅ `bilibili_crawler.py` - 主程序
+- ✅ `config.example.py` - 配置模板
+- ✅ `.gitignore` - Git忽略文件
+- ✅ `README.md` - 项目说明
+- ✅ `cleanup.bat` / `cleanup.sh` - 清理脚本
+
+## 🔍 最后检查
+
+在上传前，再次运行：
+
+```bash
+# 检查是否有敏感文件
+git status
+
+# 确认config.py不会被提交
+git ls-files | grep config.py
+# 应该返回空，如果有输出则说明有问题
+```
+
+---
+
+**完成所有检查后，就可以安全地上传到GitHub了！** 🎉
